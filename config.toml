@@ -28,13 +28,13 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     weight = 2
 [[menu.main]]
     name = "LinkedIn"
-    url = "https://www.linkedin.com/in/road2stat"
+    url = "https://www.linkedin.com"
     weight = 3
 [[menu.main]]
     name = "Twitter"
-    url = "https://twitter.com/road2stat"
+    url = "https://twitter.com"
     weight = 4
 [[menu.main]]
-    name = "RSS"
-    url = "/index.xml"
+    name = "CUSP"
+    url = "https://cusplondon.ac.uk"
     weight = 5
