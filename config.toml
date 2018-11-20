@@ -20,7 +20,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [[menu.main]]
     name = "Home"
-    url = "https://jhumble.netlify.com"
+    url = "https://jacksblog.netlify.com"
     weight = 1
 [[menu.main]]
     name = "GitHub"
