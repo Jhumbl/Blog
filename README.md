@@ -1,2 +1,2 @@
 # Blog
-Repository containing files code for blog
+Repository containing files and code for blog
