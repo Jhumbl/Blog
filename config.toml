@@ -1,6 +1,6 @@
 baseurl = "/"
 title = "Jack's Blog"
-author = "Nan Xiao"
+author = "Jack"
 relativeurls = true
 canonifyurls = true
 languagecode = "en"
@@ -20,11 +20,11 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [[menu.main]]
     name = "Home"
-    url = "https://nanx.me"
+    url = "https://jhumble.netlify.com"
     weight = 1
 [[menu.main]]
     name = "GitHub"
-    url = "https://github.com/road2stat"
+    url = "https://github.com/Jhumbl"
     weight = 2
 [[menu.main]]
     name = "LinkedIn"
