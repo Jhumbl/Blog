@@ -7,4 +7,4 @@ categories: []
 tags: []
 ---
 
-[Click Here](../files/dissertation_executive_summary.pdf) to view an executive summary of the 2018/19 collaboration between Westminster City Council and the Centre of Urban Science and Progress London.
+[Click Here](/pdfs/dissertation_executive_summary.pdf) to view an executive summary of the 2018/19 collaboration between Westminster City Council and the Centre of Urban Science and Progress London.
