@@ -1,0 +1,191 @@
+---
+title: Maps, Maps, Maps! Learning ArcGIS
+author: Jack
+date: '2019-03-09'
+slug: maps-maps-maps-learning-arcgis
+categories: []
+tags: []
+html_output:
+  highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(kableExtra.html.bsTable = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+library(dplyr)
+library(kableExtra)
+library(readr)
+```
+
+
+This project aims to answer the question: Where are the best places to live in London? It does this by composite, weight indexing of a number of different variables. Six variables were chosen based on attributes one might look for when buying a property. These six variables are as follows:
+
+- House Prices  
+- Air Pollution  
+- Crime Density  
+- Population Density  
+- Hospital Accessibility  
+- Transport Accessibility  
+
+Data for all six attributes were collected and visualised in ArcGIS. The following Maps show these variables across London:
+
+
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Map showing the average house prices for each LSOA", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/HousePriceMap.png")
+```
+
+<br/><br/>
+<br/><br/>
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Concentration of PM<sub>2.5</sub> per output area", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/PollutionMap.png")
+```
+  
+<br/><br/>
+<br/><br/>
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Left: Locations of crime in london. Right: Point density of crime in london", fig.align='center', message=FALSE, warning=FALSE}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/CombinedImage.png")
+```
+
+<br/><br/>
+<br/><br/>
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Population density map per LSOA", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/PopDensMap.png")
+```
+
+<br/><br/>
+<br/><br/>
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Left: Hospital locations. Right: Euclidean distance from hospitals", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/HospCombined.png")
+```
+
+<br/><br/>
+<br/><br/>
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Left: Location of train stations in london. Right: Euclidean distance from stations", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/statMaps.png")
+```
+
+<br/><br/>
+<br/><br/>
+
+## Results
+
+Once each of these variables have been processed into raster format, they can be reclassified to assign higher points for desirable attributes and lower points for undesirable attributes. Table 1 shows the reclassification performed for crime density. It can be seen that for low crime rates we assign 9 points and for high crime rates we only assign 1 point. A similar process can be applied to all six variables.
+
+
+```{r, echo=FALSE}
+old_values <- c("0 - 20.22", "20.22 - 45.04", "45.04 - 74.45", "74.45 - 112.30", "112.30 - 157.80", "157.80 - 211.11", "211.11 - 303.03", "303.03 - 478.45", "478.45 - 679.68", "NoData")
+new_values <- c(9,8,7,6,5,4,3,2,1, "NoData")
+crime_reclassify <- data.frame(old_values, new_values)
+headings <- c("Old Values", "New Values")
+names(crime_reclassify) <- headings
+kable(crime_reclassify, "html", caption = "The reclassified values for crime", booktabs = T) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  row_spec(0,bold=TRUE)
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+old_values <- c("172,417 - 381,625", "381,625 - 510,109", "510,108 - 667,577", "667,577 - 906,786", 
+                "905,786 - 1,311,889", "1,311,889 - 2,027,948", "2,027,948 - 4,032,188", 
+                "4,032,188 - 6,596,372", "6,596,372 - 11,981,983", "NoData")
+new_values <- c(4,6,7,9,8,5,3,2,1, "NoData")
+price_reclassify <- data.frame(old_values, new_values)
+headings <- c("Old Values", "New Values")
+names(price_reclassify) <- headings
+kable(price_reclassify, "html", caption = "The reclassified values for house prices", booktabs = T) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  row_spec(0,bold=TRUE)
+```
+
+
+Once all six reclassified rasters have been created a raster calculation can be performed to sum all the suitability rasters to find which places in London score the most points. The following equation shows the raster calculation that was performed:
+
+```{r, eval=FALSE}
+"crime_suitability" + "price_suitability" + "pollution_suitability" + 
+"population_density_suitability" + "hospital_suitability" + 
+"station_suitability"
+```
+
+A zonal statistics as table function can then be used to average the scores for each LSOA (smallest statistical boundaries in London). The combined suitability map is shown in Figure 7.
+
+<br/><br/>
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Map of combined suitability across london", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/combined_suitability.png")
+```
+
+The Following tables show the highest and lowest scoring LSOAs. The names of LSOAs are in the format “E0100XXXX” where X is a numerical integer:
+
+```{r, echo=FALSE}
+table1 <- read_csv("LSOA_table.csv")
+table1 <- select(table1, -1)
+names(table1) <- c("Code", "Name", "Average No. Points")
+table1 <- table1 %>% mutate_at(vars('Average No. Points'), funs(round(., 2)))
+kable(head(table1, 10), "html", caption = "Highest scoring LSOAs", booktabs = T) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  row_spec(0,bold=TRUE)
+```
+
+```{r, echo=FALSE}
+table1 <- table1 %>%
+  arrange(`Average No. Points`)
+kable(head(table1, 10), "html", caption = "Lowest scoring LSOAs", booktabs = T) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  row_spec(0,bold=TRUE)
+```
+
+It can be seen that Bromley 037E has the highest number of points while Westminster 013F has the lowest number of points. A similar process can be done however instead of averaging be LSOA we can aggregate to a larger area and average by Borough. The following tables show the highest and lowest scoring Boroughs. These locations are labeled in Figure 8.
+
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Map of combined suitability across london", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/comb_suit_labelledl.png")
+```
+
+```{r, echo=FALSE}
+table2 <- read_csv("borough_aggregate.csv")
+table2 <- select(table2, -1)
+names(table2) <- c("Borough", "Average No. Points")
+table2 <- table2 %>% mutate_at(vars('Average No. Points'), funs(round(., 2)))
+kable(head(table2, 10), "html", caption = "Highest scoring boroughs", booktabs = T) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  row_spec(0,bold=TRUE)
+```
+
+```{r, echo=FALSE}
+names(table2) <- c("Borough", "Average No. Points")
+table2 <- table2 %>%
+  arrange(`Average No. Points`)
+kable(head(table2, 10), "html", caption = "Lowest scoring boroughs", booktabs = T) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  row_spec(0,bold=TRUE)
+```
+
+It can be seen that while Westminster remains the lowest scoring area of London. Kingston upon Thames is now the highest scoring area. This is an example of the Modifiable Area Unit Problem (MAUP) and occurs when aggregating to different sized areas. These locations are labelled in Figure 9.
+
+
+
+```{r, fig.width = 2, echo=FALSE, out.width="100%", fig.cap="Map of suitablity for the london boroughs", fig.align='center'}
+# Small fig.width
+include_graphics("/post/2019-03-09-maps-maps-maps-learning-arcgis_files/Borough_Map.png")
+```
+
+There are a number of limitations when conducting an analysis of this kind. Consideration needs to be paid to things like the edge effect and the modifiable area unit problem. The source of the data and collections methods must also be fully understood to accurately interpret the results of the analysis. As all the data is taken from reputable sources, a lot of the metadata is there. We can see, for example, that the data for air pollution was taken from 2013. This may affect the results as levels of pollution would have almost certainly changed since then. Although much of the relations will be the same (i.e. the centre being a hotspot). It must also be noted that the number of variables we could include in this analysis is huge. Variables such as culture, employment opportunities, proximity to schools or airports, commercial options, local cuisine and access to green space. The list could go one. Because of this, we may have only captured a small proportion of what makes a neighbourhood a preferable place to live. As well as this, the variables we have included might require a subtler way of measuring it. The hospital data, for example, may not be exactly communicating what we would like to know. A better variable might be the total number of patients per GP in a given area. On top of this, in our premise, we stated that the closer to a hospital or station would be favourable. This, however, may not be the case as we would not like to live directly next to a train station or hospital. Further refinement will need to be made to account for this. Additional information into the type of crimes being committed would also be an additional factor one may wish to know.  
+Future work could be to allow the user to manually input their preferences and assign more weight to certain variables to give a more tailored output.

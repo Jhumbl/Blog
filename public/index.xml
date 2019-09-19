@@ -17,7 +17,7 @@
       <pubDate>Tue, 17 Sep 2019 00:00:00 +0000</pubDate>
       
       <guid>/post/msc-dissertation-executive-summary-electric-vehicles/</guid>
-      <description>During my time at the Centre of Urban Science and Progress at King&amp;rsquo;s College London, I had the opportunity to collaborate with Westminster City Council to evaulate the current distribution of electric vehicle infrastructure and advise its most effecient distribution. This project used electric vehicle charging transaction data from 2018-2019 and included data mining, spatial statistics and network analysis techniques in order to address the problems they were facing.
+      <description>During my time at the Centre of Urban Science and Progress at King&amp;rsquo;s College London, I had the opportunity to collaborate with Westminster City Council to evaluate the current distribution of electric vehicle infrastructure and advise its most efficient distribution. This project used electric vehicle charging transaction data from 2018-2019 and included data mining, spatial statistics and network analysis techniques in order to address the problems they were facing.
 An executive summary of the project can be seen below.</description>
     </item>
     
@@ -28,6 +28,21 @@ An executive summary of the project can be seen below.</description>
       
       <guid>/post/will-the-real-smart-city-please-stand-up/</guid>
       <description>The 2018 revision of the United Nations World Urbanisation Prospects state that 55% of the world population is currently living in urban areas1. This figure is set to increase to 68% by 2050. Now, North America stands as the most urbanised, with 82% of its population living in urban areas. The definition of “smart city” has not been explicitly articulated in the literature with varying suggestions under differing prefixes such as “intelligent”2 and “digital”3.</description>
+    </item>
+    
+    <item>
+      <title>Maps, Maps, Maps! Learning ArcGIS</title>
+      <link>/post/maps-maps-maps-learning-arcgis/</link>
+      <pubDate>Sat, 09 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/maps-maps-maps-learning-arcgis/</guid>
+      <description>This project aims to answer the question: Where are the best places to live in London? It does this by composite, weight indexing of a number of different variables. Six variables were chosen based on attributes one might look for when buying a property. These six variables are as follows:
+ House Prices
+ Air Pollution
+ Crime Density
+ Population Density
+ Hospital Accessibility
+ Transport Accessibility  Data for all six attributes were collected and visualised in ArcGIS.</description>
     </item>
     
     <item>
