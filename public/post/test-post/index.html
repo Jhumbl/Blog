@@ -57,7 +57,20 @@
     
 
 
-<pre class="r"><code>x &lt;- rnorm(100, 5, 3)
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>test_func &lt;- function(a,b){
+  return(a + b)
+}
+
+x &lt;- rnorm(100, 5, 3)
 y &lt;- rnorm(100, 5, 4)
 plot(x, y)</code></pre>
 <p><img src="../../post/2018-11-20-test-post_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
@@ -69,7 +82,7 @@ plot(x, y)</code></pre>
       <a class="basic-alignment left" href="../../post/tanka-theme-demo/">&laquo; Tanka Theme Demo</a>
     
     
-      <a class="basic-alignment left" href="../../post/maps-maps-maps-learning-arcgis/">Maps, Maps, Maps! Learning ArcGIS &raquo;</a>
+      <a class="basic-alignment left" href="../../post/2015-07-23-r-rmarkdown/">Hello Blogdown! &raquo;</a>
     
   </div>
 </section>
