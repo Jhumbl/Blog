@@ -1,0 +1,1273 @@
+---
+title: Data Journalism with D3.js - The 2019 UK General Election
+author: Jack
+date: '2019-12-17'
+slug: data-journalism-with-d3-js-the-2019-uk-general-election
+categories: []
+tags: []
+---
+
+
+
+<p>The 2019 United Kingdom general election was held on Thursday 12 December 2019. The Conservative Party, having failed to obtain a majority in the 2017 general election, had faced a prolonged parliamentary deadlock over Brexit while it governed in minority with the support of the Democratic Unionist Party (DUP) which had forced the resignation of the previous Prime Minister Theresa May. As a result, Boris Johnson called for an early election to take place in December, which was eventually passed into law.</p>
+<p>Below is a fully interactive exploratory visualisation of the results for this election:</p>
+<ul>
+<li>Select a constitueny on the map to see the results for that area.<br />
+</li>
+<li>Select a candidate on the bar chart to view their information.<br />
+</li>
+<li>Click the hexmap button to see a visual connection between the political hex map and the regular map.</li>
+</ul>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/d3js/5.14.2/d3.min.js"></script>
+<script src="https://unpkg.com/d3-composite-projections@1.3.1/d3-composite-projections.js"></script>
+
+<style type="text/css">
+    /* Style goes here */
+
+    path {
+        -moz-transition: all 0.25s;
+        -o-transition: all 0.25s;
+        -webkit-transition: all 0.25s;
+        transition: all 0.2s;
+    } 
+
+    .border:hover{
+        fill:lightblue;
+        stroke-width: 2;
+    }  
+
+/*             body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }  */
+
+    .border {
+        stroke: black;
+        stroke-width: 0.15px; /* desired stroke width (line height)*/
+        vector-effect: non-scaling-stroke; /* line height won't scale*/
+    }
+
+
+.hexbod {
+        stroke: black;
+        stroke-width: 0.05px;
+        vector-effect: non-scaling-stroke; /* line height won't scale*/
+    }
+
+.hexbod:hover {
+        fill:lightblue;
+        stroke: black;
+        stroke-width: 2;
+    }  
+
+    #tooltip, #tooltip2 {
+        position: absolute;
+        display: inline-block;
+        
+        height: auto;
+        padding: 10px;
+        background-color: white;
+        opacity: 90%;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 10px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    #tooltip.hidden, #tooltip2.hidden {
+        display: none;
+    }
+
+    #tooltip p, #tooltip2 p {
+        margin: 0;
+        font-family: sans-serif;
+        font-size: 16px;
+        line-height: 20px;
+    }
+
+image {
+        border: 3px solid #021a40;
+    }
+
+#info_title {
+        text-decoration: underline;
+    }
+</style>
+
+</head>
+<body>
+<div id="tooltip" class="hidden">
+        <p><strong>Constituency:</strong></p>
+        <p><span id="value">100</span></p>
+</div>
+<div id="tooltip2" class="hidden">
+        <p><strong>Candidate: <span id="candidate"></span></strong></p>
+        <p>- <span id="party">100</span></p>
+        <p>- Votes: <span id="votes"></span></p>
+</div>
+<div id="chart" align="center"></div>
+
+<br />
+<br />
+<script type="text/javascript">
+
+var w = 350;//document.getElementById("content").offsetWidth / 2;//window.innerWidth/4;
+console.log(w);
+var h = w*1.5;
+var padding = 40;
+var hex_layout = false;
+
+function max_index(d){
+    candidates = d["properties"]["candidates"];
+    var max_votes = 0;
+    var max_votes_index;
+    for (var i =0; i < Object.keys(candidates).length; i++){
+            if (candidates[i]["votes"] > max_votes){
+                max_votes = candidates[i]["votes"];
+                max_votes_index = i;
+            }
+        };
+    return max_votes_index;
+};
+
+var projection = d3.geoAlbersUk().translate([w/2.4,h/2]).scale(2700);
+
+var path = d3.geoPath()
+             .projection(projection);//.center([-3.5,55.4])
+             
+
+var bar = d3.select("#chart").append("svg")
+            .attr("id", "bar")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("border", 1);
+            //.attr("tranform", "translate(600,0)");  
+
+var svg2 = d3.select("#chart").append("svg")
+            .attr("id", "maindiv")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("border", 1)
+            //.attr("transform", "translate(-1,0)");        
+
+/*var borderPath = svg2.append("rect")
+ 		.attr("x", 0)
+        .attr("y", 0) 
+        .attr("rx", 20)
+        .attr("ry", 20)
+ 		.attr("height", h)
+ 		.attr("width", w)
+ 		.style("stroke", "	#778899")
+ 		.style("fill", "none")
+           .style("stroke-width", 1);*/
+
+
+/*         var borderPath2 = bar.append("rect")
+ 		.attr("x", 0)
+        .attr("y", 0)
+        .attr("rx", 20)
+        .attr("ry", 20)
+ 		.attr("height", h)
+ 		.attr("width", w)
+ 		.style("stroke", "	#778899")
+ 		.style("fill", "none")
+        .style("stroke-width", 1);  */
+     
+
+
+
+const zoom = d3.zoom()
+    .interpolate(d3.interpolate)
+    .scaleExtent([1, 8])
+    .on('zoom', zoomed);
+
+function zoomed() {
+    svg2
+    .selectAll('.mapborder,.composite_border') // To prevent stroke width from scaling
+    .attr('transform', d3.event.transform);
+} 
+
+svg2.call(zoom);
+var zoom_state_original = d3.zoomTransform(svg2.node());
+
+
+d3.json("/post/2018-06-10-will-the-real-smart-city-please-stand-up_files/merged_dict2.json") 
+  .then(function(json, error){
+    if (error) throw error;
+    //colsole.log(error);
+
+    data = json.features;
+
+    color = {"Labour Party" : "#DC241f", 
+             "Labour and Co-operative Party": "#DC241f",
+             "Conservative and Unionist Party" : "#0087DC", 
+             "Scottish National Party (SNP)" : "#FFFF00", 
+             "Liberal Democrats" : "#FDBB30", 
+             "Green Party": "green",
+             "Democratic Unionist Party - D.U.P.": "#8B0000",
+             "Sinn Féin": "#008C5E",
+             "Plaid Cymru - The Party of Wales": "#00DE68",
+             "Independent": "#A9A9A9",
+             "The Brexit Party": "#12b6cf",
+             "Aontú": "#44532A",
+             "Libertarian Party": "#002C4E",
+             "Scottish Green Party": "#62A53A",
+             "Yorkshire Party": "#21A8E0",
+             "SDLP (Social Democratic & Labour Party)": "#006E51",
+             "Alliance - Alliance Party of Northern Ireland": "#F2D030",
+             "People Before Profit Alliance": "#6A100F",
+             "Ulster Unionist Party": "#1F3461",
+             "UK Independence Party (UKIP)": "#702E85",
+             "Speaker seeking re-election": "black",
+             "Christian Peoples Alliance": "#813887",
+             "Social Democratic Party": "#0D458D",
+             "The Liberal Party": "#FFAC00",
+             "Animal Welfare Party": "#EE3263"};
+
+    logo = {"Labour Party" : "party_logos/labour_logo.svg", 
+             "Labour and Co-operative Party": "party_logos/labour_logo.svg",
+             "Conservative and Unionist Party" : "party_logos/conservative_logo.svg", 
+             "Scottish National Party (SNP)" : "party_logos/snp_logo.svg", 
+             "Liberal Democrats" : "party_logos/liberal_democrats_logo.svg", 
+             "Green Party": "party_logos/green_logo.svg",
+             "Democratic Unionist Party - D.U.P.": "party_logos/conservative_logo.svg",
+             "Sinn Féin": "party_logos/conservative_logo.svg",
+             "Plaid Cymru - The Party of Wales": "party_logos/plaid_cymru_logo.svg",
+             "Independent": "party_logos/independant_logo.svg",
+             "The Brexit Party": "party_logos/brexit_party_logo.svg",
+             "SDLP (Social Democratic & Labour Party)": "party_logos/sdlp_logo.svg",
+             "Sinn Féin": "party_logos/sinn_fein_logo.svg",
+             "Ulster Unionist Party": "party_logos/uup_logo.svg",
+             "Aontú": "party_logos/aontu_logo.svg",
+             "Libertarian Party": "party_logos/libertarian_party_logo.svg",
+             "Scottish Green Party": "party_logos/scottish_green_party_logo.svg",
+             "Democratic Unionist Party - D.U.P.": "party_logos/democratic_unionist_party_logo.svg",
+             "UK Independence Party (UKIP)": "party_logos/ukip_logo.svg",
+             "Yorkshire Party": "party_logos/yorkshire_logo.svg",
+             "Alliance - Alliance Party of Northern Ireland": "party_logos/alliance_logo.svg",
+             "People Before Profit Alliance": "party_logos/people_before_profit_logo.svg",
+             "Official Monster Raving Loony Party": "party_logos/looney_logo.svg",
+             "Speaker seeking re-election": "party_logos/speaker_logo.svg",
+             "Christian Peoples Alliance": "party_logos/christian_peoples_alliance_logo.svg",
+             "Social Democratic Party": "party_logos/sdp_logo.svg",
+             "The Liberal Party": "party_logos/liberal_party_logo.svg",
+             "Animal Welfare Party": "party_logos/awp_logo.svg",
+             "other": "party_logos/other_logo.svg"};
+    
+
+
+    var cScale = d3.scaleLog()
+                   .domain([d3.min(data, function(d){return d.value.properties.st_areashape; }), d3.max(data, function(d){ return d.value.properties.st_areashape; })])
+                   .range([0,255]);
+
+    // ===============================================================
+    // MAP
+    // ===============================================================
+
+    var mapkey = function(d) {
+return d.key;
+    };
+
+    svg2.selectAll(".mapborder")
+       .data(data, mapkey)
+       .enter()
+       .append("g")
+       .attr("class", "mapborder")
+       .append("path")
+       .attr("d", function(d){
+           return path(d.value);
+       })
+       .attr("class", "border")
+       .attr("fill", function(d){
+           return color[d["value"]["properties"]["candidates"][max_index(d.value)]["party"]]; 
+       })
+
+       d3.selectAll(".mapborder")
+       .on("mouseover", function(d) {
+            //Get this bar's x/y values, then augment for the tooltip
+            var xPosition = d3.event.pageX + 20;//parseFloat(path.centroid(d.value)[0]) + 750; //+ xScale.bandwidth() / 2;
+            var yPosition = d3.event.pageY + 20;//parseFloat(path.centroid(d.value)[1]) + 100; // 2 + h / 2;
+            //Update the tooltip position and value
+            d3.select("#tooltip")
+                .style("left", xPosition + "px")
+                .style("top", yPosition + "px")
+                .select("#value")
+                .text(d.value.properties.pcon17nm);
+                //Show the tooltip
+            d3.select("#tooltip").classed("hidden", false);
+       })
+       .on("mouseout", function() {
+            //Hide the tooltip
+            d3.select("#tooltip").classed("hidden", true);
+        });
+
+    svg2
+        .append("g")
+        .attr("class", "composite_border")
+        .append("path")
+        .style("fill", "none")
+        .style("stroke", "black")
+        .style("stroke-width", "0.5")
+        .attr("d", projection.getCompositionBorders());
+
+    var hexbutton = svg2.append("g")
+        .attr("class", "hexbutton")    
+        .append("rect")
+        .attr("class", "hexbuttonrect")
+        .attr("x", 10)
+        .attr("y", 10)
+        .attr("rx", 7)
+        .attr("ry", 7)
+        .attr("width", 50)
+        .attr("height", 50)
+        .attr("fill", "white")
+        .attr("stroke", "black")
+        .attr("opacity", 0.9)
+        .on("mousedown", function(){            
+            d3.event.stopImmediatePropagation(); // stop zoom   
+        });
+
+    function draw_zoom_buttons(){
+        var zoomInButton =svg2.append("g")
+                            .attr("class", "zoomIn_button")
+                            .append("rect")
+                            .attr("x", w/100)
+                            .attr("y", h-h/100 - w/13)
+                            .attr("rx", 5)
+                            .attr("ry", 5)
+                            .attr("width", w/13)
+                            .attr("height", w/13)
+                            .attr("fill", "white")
+                            .attr("stroke", "black")
+                            .attr("opacity", 0)
+                            .on("mousedown", function(){            
+                                d3.event.stopImmediatePropagation(); // stop zoom   
+                            })
+                            .transition()
+                            .duration(500)
+                            .attr("opacity", 0.9);
+        svg2.append("text")
+            .attr("class", "zoomIn_button")
+            .text("+")
+            .attr("x", w/100 + w/30 + 1.9)
+            .attr("y", h - h/100 - w/55 -0.4)
+            .attr("text-anchor", "middle")
+            .style("pointer-events", "none")
+            .style("font-size", "24px")
+            .attr("opacity", 0)
+            .transition()
+            .duration(500)
+            .attr("opacity", 0.9);
+        var zoomOutButton =svg2.append("g")
+                            .attr("class", "zoomOut_button")
+                            .append("rect")
+                            .attr("x", w*2/100 + w/13)
+                            .attr("y", h-h/100 - w/13)
+                            .attr("rx", 5)
+                            .attr("ry", 5)
+                            .attr("width", w/13)
+                            .attr("height", w/13)
+                            .attr("fill", "white")
+                            .attr("stroke", "black")
+                            .attr("opacity", 0)
+                            .on("mousedown", function(){            
+                                d3.event.stopImmediatePropagation(); // stop zoom   
+                            })
+                            .transition()
+                            .duration(500)
+                            .attr("opacity", 0.9);
+        svg2.append("text")
+            .attr("class", "zoomOut_button")
+            .text("-")
+            .attr("x", w*2/100 + w/20 + w/15 -0.1)
+            .attr("y", h - h/100 - w/55 -0.4)
+            .attr("text-anchor", "middle")
+            .style("pointer-events", "none")
+            .style("font-size", "24px")
+            .attr("opacity", 0)
+            .transition()
+            .duration(500)
+            .attr("opacity", 0.9);
+        var resetButton =svg2.append("g")
+                            .attr("class", "reset_zoom")
+                            .append("rect")
+                            .attr("x", w*3/100 + w*2/13)
+                            .attr("y", h-h/100 - w/13)
+                            .attr("rx", 5)
+                            .attr("ry", 5)
+                            .attr("width", w*2/13)
+                            .attr("height", w/13)
+                            .attr("fill", "white")
+                            .attr("stroke", "black")
+                            .attr("opacity", 0)
+                            .on("mousedown", function(){            
+                                d3.event.stopImmediatePropagation(); // stop zoom   
+                            })
+                            .transition()
+                            .duration(500)
+                            .attr("opacity", 0.9);  
+        svg2.append("text")
+            .attr("class", "reset_zoom")
+            .text("reset")
+            .attr("x", w*3/100 + w*3/13 + 1)
+            .attr("y", h - h/100 - w/55 -2)
+            .attr("text-anchor", "middle")
+            .style("pointer-events", "none")
+            .style("font-size", "20px")
+            .attr("opacity", 0)
+            .transition()
+            .duration(500)
+            .attr("opacity", 0.9);                               
+        
+
+        var hextext = svg2.append("text")
+            .text("Click Me!")
+            .attr("x", 35)
+            .attr("y", 31)
+            .attr("text-anchor", "middle")
+            .style("pointer-events", "none")
+            .style("font-size", "10px");
+
+        var hextext2 = svg2.append("text")
+            .text("HexMap")
+            .attr("x", 35)
+            .attr("y", 45)
+            .attr("text-anchor", "middle")
+            .style("pointer-events", "none")
+            .style("font-size", "10px");
+    
+        d3.select(".reset_zoom")
+        .on("click", function(){
+            if (hex_layout == false){
+                svg2.transition()
+                    .ease(d3.easeExp)
+                    .duration(500)
+                    .call(zoom.transform, d3.zoomIdentity);
+            }
+        });
+        d3.select(".zoomIn_button")
+        .on("click", function(){
+            svg2.transition().ease(d3.easeExp).duration(500).call(zoom.scaleBy, 1.5);
+        });
+        d3.select(".zoomOut_button")
+        .on("click", function(){
+            svg2.transition().ease(d3.easeExp).duration(500).call(zoom.scaleBy, 0.75);
+        });
+    };
+    draw_zoom_buttons();
+    
+    svg2.append("rect")
+          .attr("class", "sourcebackground")
+          .attr("x", 198)
+          .attr("y", h-19)
+          .attr("width", 150)
+          .attr("height", 13)
+          .style("fill", "white")
+          .style("opacity", 0.7);
+
+    svg2.append("text")
+       .attr("class", "source")
+       .attr("x", 200)
+       .attr("y", h-10)
+       .attr("fill", "grey")
+       .style("font-size", "8")
+       .attr("font", "sans-serif")
+       .text("Source: https://democracyclub.org.uk/")
+       
+    // ===============================================================
+    // BAR PLOT BARS AND LOGOS
+    // ===============================================================
+    var xPadding = 60;
+    var yPadding = 30;
+    var bar_data = data[585]["value"]["properties"]["candidates"];
+
+    var barkey = function(d) {
+      return d.partyID;
+    };
+
+    bar_data.sort(function(a,b){
+        return a.votes - b.votes;
+    })
+
+    var xScale = d3.scaleLinear()
+                   .domain([0, d3.max(bar_data, function(d){
+                        return d.votes;
+                   })])
+                   .range([3, w - xPadding]);
+
+    var yScale = d3.scaleBand()
+                   .domain(d3.range(bar_data.length))
+                   .range([h - yPadding, h/2])
+                   .paddingInner(0.25);
+    
+    var xAxis = d3.axisTop(xScale).ticks(6);
+    
+    bar.selectAll("rect")
+       .data(bar_data, barkey)
+       .enter()
+       .append("rect")
+       .attr("class", "bars")
+       .attr("x", function(d){
+           return xScale(0);
+       })
+       .attr("y", function(d, i){
+           return yScale(i);
+       })
+       .attr("rx", 10)
+       .attr("ry", 10)
+       .attr("width", function(d){
+           return xScale(d.votes) - xScale(0);
+       })
+       .attr("height", yScale.bandwidth())
+       .attr("fill", function(d){
+           return color[d.party];
+       })
+       .attr("stroke", "black");
+
+    // SVG LOGOS
+    bar.selectAll("image")
+        .data(bar_data, barkey)
+        .enter()
+        .append("image")
+        .attr("class", "logos")
+        .attr("xlink:href", function(d){
+            return "/post/2018-06-10-will-the-real-smart-city-please-stand-up_files/" + logo[d.party];
+        })
+        .attr("x", function(d,i){
+            return xScale(d.votes) + 10;
+        })
+        .attr("y", function(d,i){
+            return yScale(i);
+        })
+        .attr("width", yScale.bandwidth())
+        .attr("height", yScale.bandwidth());
+
+    d3.selectAll(".bars, .logos")
+       .on("mouseover", function(d) {
+            //Get this bar's x/y values, then augment for the tooltip
+            var xPosition = d3.event.pageX + 20;//parseFloat(path.centroid(d.value)[0]) + 750; //+ xScale.bandwidth() / 2;
+            var yPosition = d3.event.pageY + 20;//parseFloat(path.centroid(d.value)[1]) + 100; // 2 + h / 2;
+            //Update the tooltip position and value
+            d3.select("#tooltip2")
+                .style("left", xPosition + "px")
+                .style("top", yPosition + "px")
+                .select("#party")
+                .text(d.party);
+            d3.select("#candidate")
+                .text(d.name);
+            d3.select("#votes")
+                .text(d.votes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+
+                //Show the tooltip
+            d3.select("#tooltip2").classed("hidden", false);
+       })
+       .on("mouseout", function() {
+            //Hide the tooltip
+            d3.select("#tooltip2").classed("hidden", true);
+        });
+
+    bar.append("g")
+        .attr("class", "x axis")
+        .style("font-size", "8")
+        .attr("transform", "translate(0, " + (h/2 - 10) + ")")
+        .call(xAxis);
+
+    bar.append("text")
+       .attr("x", (w - xPadding)/2 + 3)
+       .attr("y", 225)
+       .text("Votes")
+       .attr("text-anchor", "middle")
+       .style("font-size", "12");
+    
+
+    // ===============================================================
+    // UPDATE BAR PLOT - BARS AND LOGOS
+    // ===============================================================
+
+
+    function updateBar(newData){
+
+        var bar_data_new = newData["value"]["properties"]["candidates"];
+
+        bar_data_new.sort(function(a,b){
+            return a.votes - b.votes;
+        })
+
+        xScale.domain([0, d3.max(bar_data_new, function(d){
+                        return d.votes;
+                })]);
+        yScale.domain(d3.range(bar_data_new.length));
+        
+        // rearrange existing bars
+        bar.selectAll(".bars")
+            .data(bar_data_new, barkey)
+            .transition()
+            .duration(1000)
+            .attr("class", "bars")
+            .attr("x", function(d, i){
+                return xScale(0);
+            })
+            .attr("y", function(d, i){
+
+                return yScale(i);
+            })
+            .attr("width", function(d){
+                return xScale(d.votes) - xScale(0);
+            })
+            .attr("height", yScale.bandwidth())
+            .attr("fill", function(d){
+                return color[d.party];
+            })
+            .attr("stroke", "black");
+            
+        // rearrange existing logos
+        bar.selectAll(".logos")
+            .data(bar_data_new, barkey)
+            .transition()
+            .duration(1000)
+            .attr("x", function(d){
+                return xScale(d.votes) + 10;
+            })
+            .attr("y", function(d, i){
+                return yScale(i);
+            })
+            .attr("width", yScale.bandwidth())
+            .attr("height", yScale.bandwidth());
+
+        // ADDING NEW BARS OFF SCREEN AND MERGING WITH DATA   
+        bar.selectAll(".bars")
+            .data(bar_data_new, barkey)
+            .enter()
+            .append("rect")
+            .attr("class", "bars")
+            .attr("x", function(d){
+                return xScale(0);
+            })
+            .attr("y", function(d, i){
+                return h;
+            })
+            .attr("rx", 10)
+            .attr("ry", 10)
+            .attr("width", function(d){
+                return 0;
+            })
+            .attr("height", yScale.bandwidth())
+            .attr("fill", function(d){
+                return color[d.party];
+            })
+            .attr("stroke", "black")
+            .merge(bar.selectAll(".bars").data(bar_data_new, barkey))
+            .transition()
+            .duration(1000)
+            .attr("x", function(d){
+                return xScale(0);
+            })
+            .attr("y", function(d, i){
+                return yScale(i);
+            })
+            .attr("width", function(d){
+                return xScale(d.votes) - xScale(0);
+            })
+            .attr("height", yScale.bandwidth());
+
+        // ADDING NEW LOGOS OFF SCREEN AND MERGING WITH DATA
+        bar.selectAll(".logos")
+            .data(bar_data_new, barkey)
+            .enter()
+            .append("image")
+            .attr("class", "logos")
+            .attr("xlink:href", function(d){
+             console.log(d);
+                if (logo[d.party] != null){
+                    return "/post/2018-06-10-will-the-real-smart-city-please-stand-up_files/" + logo[d.party];
+                } else {
+                    return "/post/2018-06-10-will-the-real-smart-city-please-stand-up_files/" + logo["other"];
+                }           
+            })
+            .attr("x", function(d){
+                return xScale(0) + 10;
+            })
+            .attr("y", function(d){
+                return h;
+            })
+            .attr("width", yScale.bandwidth())
+            .attr("height", yScale.bandwidth())
+            .merge(bar.selectAll(".logos").data(bar_data_new, barkey))
+            .transition()
+            .duration(1000)
+            .attr("x", function(d){
+                return xScale(d.votes) + 10;
+            })
+            .attr("y", function(d, i){
+                return yScale(i);
+            })
+            .attr("width", yScale.bandwidth())
+            .attr("height", yScale.bandwidth());
+            
+
+
+        bar.selectAll(".bars")
+            .data(bar_data_new, barkey)
+            .exit()
+            .transition()
+            .duration(1000)
+            .attr("y", h*1.1)
+            .remove();
+        
+        bar.selectAll(".logos")
+            .data(bar_data_new, barkey)
+            .exit()
+            .transition()
+            .duration(1000)
+            .attr("y", h*1.1)
+            .remove();
+
+        bar.select(".x.axis")
+            .transition()
+            .duration(1000)
+            .call(xAxis);
+
+        // Updating Info text
+        //console.log(newData);
+        var elected_candidate = bar_data_new[bar_data_new.length - 1];
+        var constituency = newData["key"];
+        var img_url = elected_candidate.thumbnail;
+        var name = elected_candidate.name;
+        var party = elected_candidate.party;
+        var votes = elected_candidate.votes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        var elected = elected_candidate.elected;
+        
+        d3.selectAll("#info_title,#cand_image,#info_name,#info_votes,#info_party,#info_elected")
+              .style("opacity", "1")
+              .transition()
+              .duration(1000)
+              .style("opacity", "0")
+              .on("end", function(d){
+                d3.select("#cand_image")
+                    .attr("xlink:href", img_url)
+                    .style("opacity", "0")
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1"); 
+
+                d3.select("#info_title")
+                  .text(constituency)
+                  .transition()
+                  .duration(1000)
+                  .style("opacity", "1");
+
+                d3.select("#info_name") 
+                    .text(name)
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+
+                d3.select("#info_votes") 
+                    .text(votes)
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+
+                d3.select("#info_party") 
+                    .text(function(){
+                        if (party == "Alliance - Alliance Party of Northern Ireland"){
+                            return "Alliance Party of Northern Ireland";
+                        } else {
+                            return party;
+                        }
+                    })
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+
+                d3.select("#info_elected") 
+                    .text(function(){
+                        if (elected){return "Yes";
+                        } else {
+                            return "No";
+                        }
+                    })
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+              })
+
+        
+        // Interaction with Updated Bars
+
+        d3.selectAll(".bars, .logos")
+            .on("mouseover", function(d) {
+                //console.log(d);
+                var img_url = d.thumbnail;
+                //Get this bar's x/y values, then augment for the tooltip
+                var xPosition = d3.event.pageX + 20;//parseFloat(path.centroid(d.value)[0]) + 750; //+ xScale.bandwidth() / 2;
+                var yPosition = d3.event.pageY + 20;//parseFloat(path.centroid(d.value)[1]) + 100; // 2 + h / 2;
+                //Update the tooltip position and value
+                d3.select("#tooltip2")
+                    .style("left", xPosition + "px")
+                    .style("top", yPosition + "px")
+                    .select("#party")
+                    .text(d.party);
+                d3.select("#candidate")
+                    .text(d.name);
+                d3.select("#votes")
+                    .text(d.votes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                    //Show the tooltip
+                d3.select("#tooltip2").classed("hidden", false);
+            })
+            .on("mouseout", function() {
+                    //Hide the tooltip
+                    d3.select("#tooltip2").classed("hidden", true);
+            })
+            .on("click", function(d){
+                img_url = d.thumbnail;
+                var img_url = d.thumbnail;
+                var name = d.name;
+                var party = d.party;
+                var votes = d.votes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                var elected = d.elected;
+                //console.log(img_url);
+
+                if (img_url == null){
+                    console.log("No Image")
+                    img_url = "https://i.stack.imgur.com/l60Hf.png"
+                }
+
+                d3.selectAll("#cand_image,#info_name,#info_votes,#info_party,#info_elected")
+                    .style("opacity", "1")
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "0")
+                    .on("end", function(d){
+                        d3.select(this)
+                            .attr("xlink:href", img_url)
+                            .style("opacity", "0")
+                            .transition()
+                            .duration(1000)
+                            .style("opacity", "1"); 
+
+                        d3.select("#info_name") 
+                            .text(name)
+                            .transition()
+                            .duration(1000)
+                            .style("opacity", "1");
+
+                        d3.select("#info_votes") 
+                            .text(votes)
+                            .transition()
+                            .duration(1000)
+                            .style("opacity", "1");
+
+                        d3.select("#info_party") 
+                            .text(function(){
+                                if (party == "Alliance - Alliance Party of Northern Ireland"){
+                                    return "Alliance Party of Northern Ireland";
+                                } else {
+                                    return party;
+                                }
+                            })
+                            .transition()
+                            .duration(1000)
+                            .style("opacity", "1");
+
+                        d3.select("#info_elected") 
+                            .text(function(){
+                                if (elected){return "Yes";
+                                } else {
+                                    return "No";
+                                }
+                            })
+                            .transition()
+                            .duration(1000)
+                            .style("opacity", "1");
+                    });
+
+
+      }); 
+
+    };
+
+    d3.selectAll(".border")
+        .on("click", function(d, i){
+            updateBar(d);
+        });
+    
+    // ===============================================================
+    // CANDIDATE IMAGE AND INFORMATION AND DROPDOWN
+    // ===============================================================
+
+    var clip = bar.append("defs")
+                    .append("clipPath")
+                    .attr("id", "image_border")
+                    .append("rect")
+                    .attr("id", "my_border")
+                    .attr("x", 3)
+                    .attr("y", 65)
+                    .attr("rx", 45)
+                    .attr("ry", 45)
+                    .attr("width", 120)
+                    .attr("height", 120)
+                    .attr("fill-opacity", 0)
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2.5);
+
+    bar.append("svg:image")
+        .attr("id", "cand_image")
+        .attr('x', 3)
+        .attr('y', 65)
+        .attr('width', 120)
+        .attr('height', 120)
+        .attr("xlink:href", "https://static-candidates.democracyclub.org.uk/media/cache/11/cd/11cdef34a2791717a8d12645b69b151d.jpg")
+        .attr("clip-path", "url(#image_border)");
+
+    var rect = bar.append("use")
+        .attr("xlink:href", "#my_border")
+        .attr("y", 0)
+        .attr("x", 0);
+
+    // Candidate information
+
+    var info_tags = bar.append("g")
+       .attr("class", "info_tags")
+       .style("font-size", "10")
+       .style("font-weight", "bold");
+
+    info_tags.append("text")
+        .text("")
+        .attr("x", 200)
+        .attr("y", 100)
+        .attr("font-size", 32)
+    info_tags.append("text")
+       .text("Candidate:")
+       .attr("x", 133)
+       .attr("y", 100);
+    info_tags.append("text")
+        .text("Party:")
+        .attr("x", 133)
+        .attr("y", 120)
+    info_tags.append("text")
+        .text("Votes:")
+        .attr("x", 133)
+        .attr("y", 140)
+    info_tags.append("text")
+        .text("Elected:")
+        .attr("x", 133)
+        .attr("y", 160)
+
+    var info_values = bar.append("g")
+                        .attr("class", "info_values")
+                        .style("font-size", "10");
+    
+    info_values.append("text")
+        .text("Aberavon")
+        .attr("id", "info_title")
+        .attr("x", 10)
+        .attr("y", 40)
+        .style("font-size", "16")
+        .style("font-weight", "bolder");
+    info_values.append("text")
+       .attr("class", "info_value")
+       .attr("id", "info_name")
+       .text("Stephen Kinnock")
+       .attr("x", 194)
+       .attr("y", 100);
+    info_values.append("text")
+        .attr("class", "info_value")
+        .attr("id", "info_party")
+        .text("Labour Party")
+        .attr("x", 169)
+        .attr("y", 120);
+    info_values.append("text")
+        .attr("class", "info_value")
+        .attr("id", "info_votes")
+        .text("17,008")
+        .attr("x", 170)
+        .attr("y", 140);
+    info_values.append("text")
+        .attr("class", "info_value")
+        .attr("id", "info_elected")
+        .text("Yes")
+        .attr("x", 182)
+        .attr("y", 160);
+
+    d3.selectAll(".bars, .logos")
+      .on("click", function(d){
+            var img_url = d.thumbnail;
+            var name = d.name;
+            var party = d.party;
+            var votes = d.votes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            var elected = d.elected;
+            //console.log(img_url);
+
+            if (img_url == null){
+                console.log("Default Avatar:")
+                img_url = "https://i.stack.imgur.com/l60Hf.png";
+            };
+
+            d3.selectAll("#cand_image,#info_name,#info_votes,#info_party,#info_elected")
+              .style("opacity", "1")
+              .transition()
+              .duration(1000)
+              .style("opacity", "0")
+              .on("end", function(d){
+                d3.select("#cand_image")
+                    .attr("xlink:href", img_url)
+                    .style("opacity", "0")
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1"); 
+
+                d3.select("#info_name") 
+                    .text(name)
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+
+                d3.select("#info_votes") 
+                    .text(votes)
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+
+                d3.select("#info_party") 
+                    .text(function(){
+                        if (party == "Alliance - Alliance Party of Northern Ireland"){
+                            return "Alliance Party of Northern Ireland";
+                        } else {
+                            return party;
+                        }
+                    })
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+
+                d3.select("#info_elected") 
+                    .text(function(){
+                        if (elected){return "Yes";
+                        } else {
+                            return "No";
+                        }
+                    })
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", "1");
+              })
+
+      });
+
+    
+    // ===============================================================
+    // ADD HEXMAP
+    // ===============================================================
+    
+    //var hexes = d3.renderHexJSON(json.hexmap, w, h);
+
+    var hexkey = function(d){
+        return d.key;
+    };
+    
+    //var hex_layout = false;
+    d3.select(".hexbutton")
+      .on("click", function(d,i){
+
+        d3.selectAll(".hexbuttonrect")
+          .attr("fill", "lightgreen");
+
+        var zoom_state_new = d3.zoomTransform(svg2.node());
+
+        var zoom_reset_duration;
+        if (zoom_state_original == zoom_state_new){
+            zoom_reset_duration = 0;
+        } else {
+            zoom_reset_duration = 1000;
+        }
+
+        if (hex_layout == false){
+            svg2.transition()
+                .ease(d3.easeExp)
+                .duration(zoom_reset_duration)
+                .call(zoom.transform, d3.zoomIdentity);
+        };
+
+        svg2.selectAll(".hexborder")
+        .data(data, mapkey)
+        .enter()
+        .append("g")
+        .attr("class", "hexborder")
+        .append("path")
+        .attr("class", "hexbod")
+        .attr("stroke", "black")
+        .attr("d", function(d){
+            return path(d.value_hex);
+        })
+        .attr("fill", function(d){
+        return color[d["value"]["properties"]["candidates"][max_index(d.value)]["party"]]; 
+        })
+        .attr("transform", function(d, i){
+            var mapcentroid = path.centroid(d.value);
+            var hexcentroid = path.centroid(d.value_hex);
+
+            var scale_factor = d.value.properties.st_areashape;
+
+            var x = hexcentroid[0];
+            var y = hexcentroid[1];
+            return "translate(" + (mapcentroid[0] - hexcentroid[0]) + "," + (mapcentroid[1] - hexcentroid[1]) + ")"
+                + "translate(" + x + "," + y + ")"
+                + "scale(" + (1/50) + ")"
+                + "translate(" + -x + "," + -y + ")";
+        });
+
+        d3.selectAll(".hexborder")
+            .on("mouseover", function(d) {
+                    //console.log( d3.event.pageX, d3.event.pageY ) 
+                    //Get this bar's x/y values, then augment for the tooltip
+                    var xPosition = d3.event.pageX + 20;//parseFloat(path.centroid(d.value)[0]) + 750; //+ xScale.bandwidth() / 2;
+                    var yPosition = d3.event.pageY + 20;//parseFloat(path.centroid(d.value)[1]) + 100; // 2 + h / 2;
+                    //Update the tooltip position and value
+                    d3.select("#tooltip")
+                        .style("left", xPosition + "px")
+                        .style("top", yPosition + "px")
+                        .select("#value")
+                        .text(d.value.properties.pcon17nm);
+                        //Show the tooltip
+                    d3.select("#tooltip").classed("hidden", false);
+            })
+            .on("mouseout", function() {
+                    //Hide the tooltip
+                    d3.select("#tooltip").classed("hidden", true);
+                });
+        
+        // ===============================================================
+        // TRANSITION TO AND FROM HEXMAP
+        // ===============================================================
+            
+        if (hex_layout == false){
+            svg2.on(".zoom", null);
+            d3.selectAll(".hexbuttonrect")
+                .attr("fill", "lightgreen");
+            
+            d3.selectAll(".zoomIn_button, .zoomOut_button, .reset_zoom")
+              .transition()
+              .duration(500)
+              .attr("opacity", 0)
+              .remove()
+            
+            svg2.selectAll(".mapborder")//.selectAll("path")  
+                .attr("opacity", 1)        
+                .transition()
+                .ease(d3.easeExp)
+                .delay(zoom_reset_duration)
+                .duration(3000)
+                .attr("opacity", 1)
+                .attr("transform", function(d, i){
+                    var mapcentroid = path.centroid(d.value);
+                    var hexcentroid = path.centroid(d.value_hex);
+
+                    var scale_factor = d.value.properties.st_areashape;
+        
+                    var x = mapcentroid[0];
+                    var y = mapcentroid[1];
+
+                    return "scale(1.1) translate(" + (hexcentroid[0] - mapcentroid[0]) + "," + (hexcentroid[1] - mapcentroid[1]) + ")"
+                        + "translate(" + (x-50) + "," + (y-50) + ")"
+                        + "scale(" + 15000000/scale_factor + ")"
+                        + "translate(" + (-x) + "," + (-y) + ")";
+                });
+
+            svg2.selectAll(".hexborder") 
+                .style("stroke-width", "0.3px")
+                .transition()
+                .ease(d3.easeExp)
+                .delay(zoom_reset_duration)
+                .duration(3000)
+                .attr("transform", function(d, i){
+                    var mapcentroid = path.centroid(d.value);
+                    var hexcentroid = path.centroid(d.value_hex);
+
+                    var scale_factor = d.value.properties.st_areashape;
+            
+                    var x = mapcentroid[0];
+                    var y = mapcentroid[1];
+                    return "scale(1.1) translate(" + (hexcentroid[0] - mapcentroid[0]) + "," + (hexcentroid[1] - mapcentroid[1]) + ")"
+                    + "translate(" + (x-50) + "," + (y-50) + ")"
+                    + "scale(" + 50 + ")"
+                    + "translate(" + (-x) + "," + (-y) + ")";
+                })
+                //.style("stroke-width", "0.3px");
+
+                
+            
+            
+            
+            svg2.selectAll(".composite_border")
+                .attr("opacity", 1)
+                .transition()
+                .ease(d3.easeExp)
+                .delay(zoom_reset_duration)
+                .duration(3000)
+                .attr("opacity", 0);
+            
+
+            d3.selectAll(".hexborder")
+                .on("click", function(d,i){
+                    updateBar(d);             
+                });                    
+
+            hex_layout=true;
+        } else {
+            d3.selectAll(".hexbuttonrect")
+                .attr("fill", "white");
+            
+
+            svg2.selectAll(".mapborder")
+                .transition()
+                .ease(d3.easeExp)
+                .duration(3000)
+                .attr("transform", function(d,i){
+                        return "";
+                })
+                .attr("opacity", 1);
+
+            svg2.selectAll(".hexborder")
+                .transition()
+                .ease(d3.easeExp)
+                .duration(3000)
+                .attr("transform", function(d,i){
+                    return "";
+                })
+                //.style("stroke-width", "0px")
+                .remove();
+            
+            svg2.selectAll(".composite_border")
+                .attr("opacity", 0)
+                .transition()
+                .ease(d3.easeExp)
+                .delay(200)
+                .duration(3000)    
+                .attr("opacity", 1)                    
+                .on("end", function(){
+                    svg2.call(zoom);
+                    draw_zoom_buttons();
+                });
+            
+
+            hex_layout=false;
+        }
+
+    });
+    
+
+
+});
+</script>
+
+<h2>
+D3.js
+</h2>
+<p>This visualisation was created with D3.js (Data Driven Documents), a javascript library allowing users to bind data to elements of the document object model and draw svg elements whose attributes are determined by the underlying data. More information can be found at <a href="https://d3js.org/" class="uri">https://d3js.org/</a></p>

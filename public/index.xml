@@ -6,10 +6,19 @@
     <description>Recent content on Jack&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 17 Sep 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 17 Dec 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Data Journalism with D3.js - The 2019 UK General Election</title>
+      <link>/post/data-journalism-with-d3-js-the-2019-uk-general-election/</link>
+      <pubDate>Tue, 17 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/data-journalism-with-d3-js-the-2019-uk-general-election/</guid>
+      <description>The 2019 United Kingdom general election was held on Thursday 12 December 2019. The Conservative Party, having failed to obtain a majority in the 2017 general election, had faced a prolonged parliamentary deadlock over Brexit while it governed in minority with the support of the Democratic Unionist Party (DUP) which had forced the resignation of the previous Prime Minister Theresa May. As a result, Boris Johnson called for an early election to take place in December, which was eventually passed into law.</description>
+    </item>
     
     <item>
       <title>The Future is Electric - MSc Dissertation - Executive Summary</title>
