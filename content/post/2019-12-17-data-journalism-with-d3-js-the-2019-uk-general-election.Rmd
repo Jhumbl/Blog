@@ -1303,7 +1303,7 @@ return d.key;
 <!--/html_preserve-->
 
 <h2>D3.js</h2>
-This visualisation was created with D3.js (Data Driven Documents), a javascript library allowing users to bind data to elements of the document object model and draw svg elements whose attributes are determined by the underlying data. More information can be found at [https://d3js.org/](https://d3js.org/)
+This visualisation was created with D3.js (Data Driven Documents), a javascript library allowing developers to bind data to elements of the document object model and draw svg elements whose attributes are determined by the underlying data. More information can be found at [https://d3js.org/](https://d3js.org/)
 
 
 
