@@ -30,6 +30,15 @@
     </item>
     
     <item>
+      <title>Visualising Algorithms - DBSCAN/OPTICS</title>
+      <link>/post/visualising-algorithms/</link>
+      <pubDate>Thu, 15 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/visualising-algorithms/</guid>
+      <description>DBSCAN/OPTICS Density-based spatial clustering of applications with noise (DBSCAN)1 is an incredibly powerful and popular data mining technique for unsupervised learning. It is able to detect clusters based on their density without having to specify the number of clusters we want. The main drawbacks, however, are its highly sensitive dependancy on the initial parameters as well as its inability to detect clusters of varying density. An extension to DBSCAN aimed at mitigating these drawbacks in an algorithm known as Ordering Points to Identify the Clustering Structure (OPTICS)2.</description>
+    </item>
+    
+    <item>
       <title>Will the Real Smart City Please Stand Up?</title>
       <link>/post/will-the-real-smart-city-please-stand-up/</link>
       <pubDate>Mon, 10 Jun 2019 00:00:00 +0000</pubDate>

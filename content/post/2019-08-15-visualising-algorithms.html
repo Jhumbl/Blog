@@ -1,0 +1,41 @@
+---
+title: Visualising Algorithms - DBSCAN/OPTICS
+author: Jack Humble
+date: '2019-08-15'
+slug: visualising-algorithms
+categories: []
+tags: []
+---
+
+
+
+
+<link rel="stylesheet" type="text/css" href="/post/2019-08-15-visualising-algorithms-files/style.css">
+<script type="text/javascript" src="/post/2019-08-15-visualising-algorithms-files/OPTICS_algorithm.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/d3js/5.15.0/d3.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<div id="dbscanoptics" class="section level2">
+<h2>DBSCAN/OPTICS</h2>
+<p><em>Density-based spatial clustering of applications with noise</em> (<strong>DBSCAN</strong>)<sup>1</sup> is an incredibly powerful and popular data mining technique for unsupervised learning. It is able to detect clusters based on their density without having to specify the number of clusters we want. The main drawbacks, however, are its highly sensitive dependancy on the initial parameters as well as its inability to detect clusters of varying density. An extension to DBSCAN aimed at mitigating these drawbacks in an algorithm known as <em>Ordering Points to Identify the Clustering Structure</em> (<strong>OPTICS</strong>)<sup>2</sup>. The visualisation below shows how we can identify clusters of different densities and see the clustering structure across the entire range of the epsilon parameter, giving us a much deeper understanding of the underlying data. Move your mouse across the bar chart at the bottom to see how the 𝜀-epsilon parameter affects the clusters that are identified. <br></p>
+<div id="chart" align="center" style="width:700px; height:900px; margin:auto;">
+<button id="algorithm-button">
+Click to run OPTICS algorithm!
+</button>
+</div>
+<script type="text/javascript" src="/post/2019-08-15-visualising-algorithms-files/d3_app.js"></script>
+<script type="text/javascript" src="/post/2019-08-15-visualising-algorithms-files/jquery-csv.js"></script>
+<p><br></br></p>
+<h2>
+D3.js
+</h2>
+<p>This visualisation was created with D3.js (Data Driven Documents), a javascript library allowing developers to bind data to elements of the document object model and draw svg elements whose attributes are determined by the underlying data. More information can be found at <a href="https://d3js.org/" class="uri">https://d3js.org/</a>.</p>
+<h3>
+References
+</h3>
+<ol style="list-style-type: decimal">
+<li>Ester M., Kriegel H.-P., Sander J., Xu X.: “A Density Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise”, Proc. 2nd Int. Conf. on Knowledge Discovery and Data Mining, Portland, OR, AAAI Press, <strong>1996</strong>, pp. 226-231.</li>
+<li>M. Ankerst, M. M. Breunig, H.-P. Kriegel, and J. Sander. “OPTICS: Ordering Points To Identify the Clustering Structure”. In: Proc. SIGMOD. <strong>1999</strong>, pp. 49–60</li>
+</ol>
+</div>
