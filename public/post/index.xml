@@ -35,7 +35,7 @@
       <pubDate>Thu, 15 Aug 2019 00:00:00 +0000</pubDate>
       
       <guid>/post/visualising-algorithms/</guid>
-      <description>DBSCAN/OPTICS Density-based spatial clustering of applications with noise (DBSCAN)1 is an incredibly powerful and popular data mining technique for unsupervised learning. It is able to detect clusters based on their density without having to specify the number of clusters we want. The main drawbacks, however, are its highly sensitive dependancy on the initial parameters as well as its inability to detect clusters of varying density. An extension to DBSCAN aimed at mitigating these drawbacks in an algorithm known as Ordering Points to Identify the Clustering Structure (OPTICS)2.</description>
+      <description>DBSCAN/OPTICS Density-based spatial clustering of applications with noise (DBSCAN)1 is an incredibly powerful and popular data mining technique for unsupervised learning. It is able to detect clusters based on their density without having to specify the number of clusters we want. The main drawbacks, however, are its highly sensitive dependancy on the initial parameters (𝜀 and MinPts) as well as its inability to detect clusters of varying density.</description>
     </item>
     
     <item>
@@ -45,6 +45,15 @@
       
       <guid>/post/will-the-real-smart-city-please-stand-up/</guid>
       <description>The 2018 revision of the United Nations World Urbanisation Prospects state that 55% of the world population is currently living in urban areas1. This figure is set to increase to 68% by 2050. Now, North America stands as the most urbanised, with 82% of its population living in urban areas. The definition of “smart city” has not been explicitly articulated in the literature with varying suggestions under differing prefixes such as “intelligent”2 and “digital”3.</description>
+    </item>
+    
+    <item>
+      <title>Loom Art - Image Processing - OpenCV/D3.js</title>
+      <link>/post/loom-art-opencv-d3-js/</link>
+      <pubDate>Sat, 27 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/loom-art-opencv-d3-js/</guid>
+      <description>The inspiration for this project came from two places. The first after being unable to solve this puzzle in the New Scientist (which can be compared to drawing lines through the pixels of an image). The second was seeing other examples of this type of art style, for example this piece by Petros Vrellis, and wondering what method was used to determine the order in which the threads should be placed.</description>
     </item>
     
     <item>

@@ -9,7 +9,7 @@ tags: []
 
 The 2019 United Kingdom general election was held on Thursday 12 December 2019. The Conservative Party, having failed to obtain a majority in the 2017 general election, had faced a prolonged parliamentary deadlock over Brexit while it governed in minority with the support of the Democratic Unionist Party (DUP) which had forced the resignation of the previous Prime Minister Theresa May. As a result, Boris Johnson called for an early election to take place in December, which was eventually passed into law.
 
-Below is a fully interactive exploratory visualisation of the results for this election:
+Below is a fully interactive exploratory visualisation for the results of this election:
 
 * Select a constitueny on the map to see the results for that area.  
 * Select a candidate on the bar chart to view their information.  

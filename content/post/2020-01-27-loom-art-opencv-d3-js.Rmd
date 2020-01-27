@@ -1,0 +1,21 @@
+---
+title: Loom Art - Image Processing - OpenCV/D3.js
+author: Jack Humble
+date: '2019-04-27'
+slug: loom-art-opencv-d3-js
+categories: []
+tags: []
+---
+
+The inspiration for this project came from two places. The first after being unable to solve [this puzzle in the New Scientist](https://www.newscientist.com/article/mg24332410-900-new-scientist-puzzle-15-lines-through-the-chessboard/ "Puzzle #15") (which can be compared to drawing lines through the pixels of an image). The second was seeing other examples of this type of art style, [for example this piece by Petros Vrellis](http://artof01.com/vrellis/works/knit.html), and wondering what method was used to determine the order in which the threads should be placed. Below is my best guess at how the algorithm works. Press the play buttons to see the looms build up thread by thread.
+
+<div id="chart" align="center" margin:auto;"></div>
+
+<link rel="stylesheet" type="text/css" href="/post/loom-art-opencv-d3-js-files/style.css">
+<script src="https://ajax.googleapis.com/ajax/libs/d3js/5.15.0/d3.min.js"></script>
+<script type="text/javascript" src="/post/loom-art-opencv-d3-js-files/d3_app.js"></script>
+
+
+<h2>D3.js and Python(OpenCV)</h2>
+This visualisation was created with D3.js (Data Driven Documents), a javascript library allowing developers to bind data to elements of the document object model and draw svg elements whose attributes are determined by the underlying data. More information can be found at [https://d3js.org/](https://d3js.org/).
+Python and the cv2 library were used to implement the algorithm. The code for this project can be found on github [here](https://github.com/Jhumbl).

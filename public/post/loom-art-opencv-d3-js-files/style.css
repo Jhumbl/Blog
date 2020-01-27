@@ -1,0 +1,28 @@
+.svg {
+    text-align: center;
+    display: block;
+    margin: auto;
+}
+
+.button {
+    background-color: #555555; /* Green */
+    border: none;
+
+
+    color: white;
+    padding: 5px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    border-radius: 8px;
+    visibility: hidden;
+  }
+  
+.button:hover {
+      box-shadow: 0 6px 8px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    }
+  
+.button:focus {
+      outline:0;
+  }

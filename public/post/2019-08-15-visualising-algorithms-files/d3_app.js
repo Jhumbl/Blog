@@ -295,6 +295,13 @@ jQuery.get('/post/2019-08-15-visualising-algorithms-files/points_random.csv', fu
             .attr("fill", function(d){
                 return d.colour;
             })
+            .attr("r", function(d){
+                if (d.colour == "black"){
+                    return 1;
+                } else {
+                    return 2;
+                }
+            });
 
     };
     
@@ -311,14 +318,14 @@ jQuery.get('/post/2019-08-15-visualising-algorithms-files/points_random.csv', fu
        .on("mouseout", function(){
             horizontal.style("top", "771px" );
             epsilon_text.style("top", "752px");
-            d3.select("#eps_value").text("𝜀' = 6.2")
+            d3.select("#eps_value").text("𝜀' = 6.2");
 
             var i=0;
             var last_col;
             for (const point of optics_arr){
                 if (point.rd < 6.2){
                     point.colour = colours[i];
-                    last_col = colours[i]
+                    last_col = colours[i];
                 } else {
                     point.colour = "black";
                     if (last_col != "black"){
@@ -335,13 +342,20 @@ jQuery.get('/post/2019-08-15-visualising-algorithms-files/points_random.csv', fu
                 })
                 .attr("fill", function(d){
                     return d.colour;
-                })
+                });
         
             d3.selectAll(".circles")
                 .data(optics_arr)
                 .attr("fill", function(d){
                     return d.colour;
-                })                
+                })
+                .attr("r", function(d){
+                    if (d.colour == "black"){
+                        return 1;
+                    } else {
+                        return 2;
+                    }
+                });
        });
     
 
